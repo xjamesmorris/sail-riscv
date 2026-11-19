@@ -690,6 +690,12 @@ enum clause extension = Ext_Smstateen
 mapping clause extensionName = Ext_Smstateen <-> "smstateen"
 function clause hartSupports(Ext_Smstateen) = config extensions.Stateen.Smstateen.supported
 
+// Supervisor Domains (experimental): RISC-V Supervisor Domains Access
+// Protection v0.9
+enum clause extension = Ext_Smsd
+mapping clause extensionName = Ext_Smsd <-> "smsd"
+function clause hartSupports(Ext_Smsd) = sys_enable_experimental_extensions() & config extensions.Smsd.supported
+
 // QoS identifiers
 enum clause extension = Ext_Ssqosid
 mapping clause extensionName = Ext_Ssqosid <-> "ssqosid"
@@ -1013,6 +1019,7 @@ let extensions_ordered_for_isa_string = [
   Ext_Smdbltrp,
   Ext_Smmpm,
   Ext_Smnpm,
+  Ext_Smsd,
   Ext_Smstateen,
 
   // Debug extensions

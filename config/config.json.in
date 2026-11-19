@@ -1254,6 +1254,26 @@
     "Smcntrpmf": {
       "supported": true
     },
+    // Supervisor Domains (experimental): RISC-V Supervisor Domains Access
+    // Protection v0.9. Behaviours that the text leaves open are options;
+    // model/extensions/Smsd/smsd_types.sail says what each one means.
+    "Smsd": {
+      "supported": true,
+      // SDIDLEN, the number of implemented SDID bits: 0 to 6.
+      "sdid_len": 6,
+      // The MPT modes that mmpt.MODE accepts. Smmpt34 applies when XLEN
+      // is 32, and the others when it is 64.
+      "modes": {
+        "Smmpt34": true,
+        "Smmpt43": true,
+        "Smmpt52": true,
+        "Smmpt64": true
+      },
+      "unsupported_mode_write": "Smsd_KeepMode",
+      "bare_sdid_writable": true,
+      "bare_ppn_zero": false,
+      "fence_exception_in_vs_vu": "Smsd_Fence_Illegal"
+    },
     // The double trap extensions are not enabled by default because
     // mstatus[MDT] is reset to 1. Unless the boot code clears it, the
     // first trap taken will result in an unexpected double trap.

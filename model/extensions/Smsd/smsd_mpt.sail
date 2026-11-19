@@ -17,8 +17,9 @@
 // access type (4:174-180), as the page-table walker reports a PMP fault.
 // The steps of the lookup are in smsd_mpt_types.sail.
 //
-// The model keeps no MPT cache: each access walks the table as it is in
-// memory.
+// The model keeps no MPT cache, unless the configuration keeps a NAPOT range
+// as one entry (smsd_napot_range_cache): otherwise each access walks the
+// table as it is in memory.
 
 // Step 1: the physical address of the root table.
 private function mpt_root() -> bits(64) = zero_extend(mmpt_unpack(mmpt).ppn @ zeros(12))
@@ -43,9 +44,22 @@ private function mpte_read(addr : bits(64), size : {4, 8}) -> option(bits(64)) =
   }
 }
 
+// Keeps the NAPOT range that holds pa, found at level i, as one entry with
+// its XWR (smsd_napot_range_cache).
+private function mpt_keep_range(mode : mpt_mode, i : range(0, 4), pa : bits(64), xwr : bits(3)) -> unit = {
+  let mask : bits(64) = ones(64) << mpt_napot_range_log2(mode, i);
+  mpt_range_valid = true;
+  mpt_range_base = pa & mask;
+  mpt_range_mask = mask;
+  mpt_range_xwr = xwr;
+}
+
 // Steps 1 to 7: whether the MPT allows the access in the page of pa.
 private function mpt_allows_page(mode : mpt_mode, pa : bits(64), access : MemoryAccessType(mem_payload)) -> bool = {
   if not(mpt_pa_in_range(mode, pa)) then return false;
+  // A NAPOT range kept as one entry gives each of its pages its XWR.
+  if smsd_napot_range_cache & mpt_range_valid & (pa & mpt_range_mask) == mpt_range_base
+  then return mpt_allows(mpt_range_xwr, access);
   let levels = mpt_levels(mode);
   assert(levels >= 2, "the MPT walk needs a mode other than Bare");
   var a : bits(64) = mpt_root();
@@ -54,7 +68,11 @@ private function mpt_allows_page(mode : mpt_mode, pa : bits(64), access : Memory
       None()     => return false,
       Some(mpte) => match mpt_step_of(mode, i, mpte, pa) {
         MPT_Table(next) => a = next,
-        MPT_Leaf(xwr)   => return mpt_allows(xwr, access),
+        MPT_Leaf(xwr)   => {
+          // N=1: a NAPOT leaf.
+          if smsd_napot_range_cache & mpte[2] == 0b1 then mpt_keep_range(mode, i, pa, xwr);
+          return mpt_allows(xwr, access)
+        },
         MPT_Fault()     => return false,
       },
     }

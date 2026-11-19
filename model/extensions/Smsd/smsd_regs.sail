@@ -62,6 +62,21 @@ function smsd_flush_translations() -> unit = {
   flush_TLB(None(), None(), None(), G_Stage);
 }
 
+// A NAPOT range of the MPT kept as one entry, when the configuration allows
+// it (see smsd_napot_range_cache and smsd_mpt.sail): the range's base and
+// mask, and its XWR.
+register mpt_range_valid : bool = false
+register mpt_range_base : bits(64) = zeros()
+register mpt_range_mask : bits(64) = zeros()
+register mpt_range_xwr : bits(3) = zeros()
+
+// What a write of mmpt, MFENCE.PA, and MINVAL.PA flush: the model's
+// translations, and the NAPOT range kept as one entry.
+function smsd_flush() -> unit = {
+  smsd_flush_translations();
+  mpt_range_valid = false;
+}
+
 mapping clause csr_name_map = 0x382 <-> "mmpt"
 
 function clause is_CSR_accessible(0x382, _, _) = currentlyEnabled(Ext_Smsd)
@@ -70,7 +85,7 @@ function clause read_CSR(0x382) = mmpt
 
 function clause write_CSR(0x382, value) = {
   mmpt = legalize_mmpt(mmpt, value);
-  smsd_flush_translations();
+  smsd_flush();
   Ok(mmpt)
 }
 

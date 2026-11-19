@@ -80,6 +80,12 @@ function test_smsd_mpt_geometry() -> unit = {
   // pn[1] = 2 at level 1 of an Smmpt34 table at 0x2000.
   assert(mpt_mpte_addr(MPT_Smmpt43, 0, 0x0000000000001000, 0x0000000000030000) == 0x0000000000001018);
   assert(mpt_mpte_addr(MPT_Smmpt34, 1, 0x0000000000002000, 0x0000000004000000) == 0x0000000000002008);
+
+  // A NAPOT range: 4 MiB in Smmpt34 at level 0, and 2 MiB and 1 GiB in the
+  // other modes at levels 0 and 1.
+  assert(mpt_napot_range_log2(MPT_Smmpt34, 0) == 22);
+  assert(mpt_napot_range_log2(MPT_Smmpt43, 0) == 21);
+  assert(mpt_napot_range_log2(MPT_Smmpt52, 1) == 30);
 }
 
 $[test]

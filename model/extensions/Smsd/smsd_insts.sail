@@ -11,9 +11,9 @@
 // MFENCE.PA and MINVAL.PA of Supervisor Domains (Smsd), the text's
 // 3:136-230. The text names their funct7 values without giving them; these
 // are those of riscv/riscv-opcodes pull request 389 (rv_smsdid). Each is
-// valid only in M-mode, where the model flushes its translations (see
-// smsd_flush_translations). The model keeps no MPT cache, and ignores the
-// operands, as the text allows (3:182-186).
+// valid only in M-mode, where the model flushes its translations and any
+// NAPOT range kept as one entry (see smsd_flush). The model keeps no other
+// MPT cache, and ignores the operands, as the text allows (3:182-186).
 
 private function smsd_fence_in_virtual_mode() -> ExecutionResult =
   match smsd_fence_exception_in_vs_vu {
@@ -23,7 +23,7 @@ private function smsd_fence_in_virtual_mode() -> ExecutionResult =
 
 private function smsd_fence() -> ExecutionResult =
   match cur_privilege {
-    Machine           => { smsd_flush_translations(); RETIRE_SUCCESS },
+    Machine           => { smsd_flush(); RETIRE_SUCCESS },
     VirtualSupervisor => smsd_fence_in_virtual_mode(),
     VirtualUser       => smsd_fence_in_virtual_mode(),
     _                 => Illegal_Instruction(),

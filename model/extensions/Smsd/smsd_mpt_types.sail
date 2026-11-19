@@ -39,6 +39,15 @@ enum SmsdHlvxPermission = {
 }
 let smsd_hlvx_permission : SmsdHlvxPermission = config extensions.Smsd.hlvx_permission
 
+// What applies when the MPTEs of a NAPOT range differ. "All leaf MPTEs at that
+// level of this NAPOT memory protection range have the same value for L, N,
+// XWR and V bits" (4:131-132) binds software, and the text expects that a
+// range "may be cached as a single cache entry" (4:138-142). Default: false,
+// so each access uses the MPTE that its walk reads. True keeps the last NAPOT
+// range that a walk found as one entry, whose XWR then applies to each page
+// of the range until mmpt is written or a fence is executed.
+let smsd_napot_range_cache : bool = config extensions.Smsd.napot_range_cache
+
 // LEVELS: the number of levels of the table.
 function mpt_levels(mode : mpt_mode) -> range(0, 5) =
   match mode {
@@ -140,6 +149,16 @@ function mpt_napot_g(mode : mpt_mode) -> bits(4) =
   match mode {
     MPT_Smmpt34 => 0b0110,
     _           => 0b0100,
+  }
+
+// The log2 of the size in bytes of a NAPOT range found at level i: 2^(G+1)
+// MPTEs (4:130-131), each covering the bits below pa.pn[i]. So a range of
+// 4 MiB in Smmpt34 at level 0 (4:144-145), and of 2 MiB and 1 GiB in the
+// other modes at levels 0 and 1 (4:353-354).
+function mpt_napot_range_log2(mode : mpt_mode, i : range(0, 4)) -> range(20, 59) =
+  match mode {
+    MPT_Smmpt34 => mpt_pn_lsb(mode, i) + 7,
+    _           => mpt_pn_lsb(mode, i) + 5,
   }
 
 union mpt_step = {

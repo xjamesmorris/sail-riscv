@@ -1275,6 +1275,7 @@
       "bare_ppn_zero": false,
       "reserved_xwr_any_tuple": true,
       "napot_bit11_reserved": true,
+      "napot_range_cache": false,
       "hlvx_permission": "Smsd_HLVX_ExecuteAndRead",
       "fence_exception_in_vs_vu": "Smsd_Fence_Illegal"
     },

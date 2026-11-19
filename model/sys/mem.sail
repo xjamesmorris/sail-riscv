@@ -186,6 +186,22 @@ private function pmaCheck forall 'n, 0 < 'n <= max_mem_access .
   }
 }
 
+// The memory protection table of Supervisor Domains (Smsd), checked for an
+// access that PMP allows. Defined in extensions/Smsd/smsd_mpt.sail.
+val mptCheck : forall 'n, 0 < 'n <= max_mem_access . (physaddr, int('n), MemoryAccessType(mem_payload), Privilege) -> option(ExceptionType)
+
+// PMP's check of an access, then the memory protection table's.
+private function pmpMptCheck forall 'n, 0 < 'n <= max_mem_access . (
+  paddr  : physaddr,
+  width  : int('n),
+  access : MemoryAccessType(mem_payload),
+  priv   : Privilege,
+) -> option(ExceptionType) =
+  match pmpCheck(paddr, width, access, priv) {
+    None()  => mptCheck(paddr, width, access, priv),
+    Some(e) => Some(e),
+  }
+
 // Check if access is permitted according to PMPs _and_ PMAs.
 // NOTE: this function is only used for unsplit accesses such
 // as CBOs and an unpaired SC.
@@ -204,7 +220,7 @@ function phys_access_check forall 'n, 0 < 'n <= max_mem_access . (
   // implementation prioritizes PMP checks before PMA checks, as PMP
   // checks do not raise misaligned exceptions.
 
-  match pmpCheck(paddr, width, access, priv) {
+  match pmpMptCheck(paddr, width, access, priv) {
     Some(e) => Err(e),
     None()  => pmaCheck(paddr, width, access, pbmt, res_or_con)
   }
@@ -244,7 +260,7 @@ private function check_pma_with_pmp_priority forall 'n, 0 < 'n <= max_mem_access
     Ok(access_info) => Ok(access_info),
 
     // Prioritize PMP failures above PMA failures.
-    Err(pmaExc) => match pmpCheck(paddr, width, access, priv) {
+    Err(pmaExc) => match pmpMptCheck(paddr, width, access, priv) {
       Some(pmpExc) => Err(pmpExc),
       None()       => Err(pmaExc),
     },
@@ -289,7 +305,7 @@ private function checked_mem_read forall 'n, 0 < 'n <= max_mem_access . (
     let paddr = Physaddr(paddr_bits + (offset * split_width));
 
     // As mentioned above, PMP checks are done on each split access.
-    match pmpCheck(paddr, split_width, access, priv) {
+    match pmpMptCheck(paddr, split_width, access, priv) {
       Some(e) => return Err(paddr, e),
       None()  => (),
     };
@@ -386,7 +402,7 @@ function mem_write_ea(paddr, width, priv, access, pbmt, aq, rl, con) = {
     let offset = i;
     let paddr = Physaddr(paddr_bits + (offset * split_width));
 
-    match pmpCheck(paddr, split_width, access, priv) {
+    match pmpMptCheck(paddr, split_width, access, priv) {
       Some(e) => return Err(paddr, e),
       None()  => {
         // Do not announce MMIO writes.
@@ -449,7 +465,7 @@ function checked_mem_write forall 'n, 0 < 'n <= max_mem_access . (
 
     // As mentioned above (see `checked_mem_read()`), PMP checks are
     // done on each split access.
-    match pmpCheck(paddr, split_width, access, priv) {
+    match pmpMptCheck(paddr, split_width, access, priv) {
       Some(e) => return Err(paddr, e),
       None()  => (),
     };

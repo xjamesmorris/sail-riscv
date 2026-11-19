@@ -86,3 +86,6 @@ function mpt_access_check forall 'n, 0 < 'n <= max_mem_access . (
     & (last[63 .. 12] == first[63 .. 12] | mpt_allows_page(mode, last, access));
   if allowed then None() else Some(accessFaultFromAccessType(access))
 }
+
+// The memory path's check (see mptCheck in sys/mem.sail).
+function mptCheck(paddr, width, access, priv) = mpt_access_check(paddr, width, access, priv)

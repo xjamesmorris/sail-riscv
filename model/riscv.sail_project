@@ -538,6 +538,10 @@ extensions {
       requires sys, Smsd_types, Smsd_regs
       files extensions/Smsd/smsd_insts.sail
     }
+    Smsd_mpt_types {
+      requires Zicbop_types, Smsd_types
+      files extensions/Smsd/smsd_mpt_types.sail
+    }
   }
 
   CFI {
@@ -652,7 +656,7 @@ postlude {
 
 unit_tests {
   after postlude
-  requires prelude, core, sys, exceptions, postlude, Smsd_types, Smsd_regs
+  requires prelude, core, sys, exceptions, postlude, A_types, Zicbop_types, Smsd_types, Smsd_regs, Smsd_mpt_types
 
   files
     unit_tests/test_mstatus.sail,

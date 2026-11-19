@@ -81,6 +81,17 @@ private function mpt_allows_page(mode : mpt_mode, pa : bits(64), access : Memory
   false
 }
 
+// Whether the MPT has refused one of the current instruction's accesses. A
+// refusal ends the instruction's accesses: the instruction raises the access
+// fault, or a prefetch or a fault-only-first load does not. So an access
+// fault that the instruction raises after a refusal is the MPT's.
+register mpt_refused : bool = false
+
+// Before each instruction (ext_pre_step_hook calls it).
+function smsd_pre_step() -> unit = {
+  mpt_refused = false
+}
+
 // Whether the MPT allows an access of width bytes at paddr, made with the
 // effective privilege priv: None() if it does, or if it does not apply, and
 // otherwise an access fault for the access type. mmpt is active unless the
@@ -102,8 +113,20 @@ function mpt_access_check forall 'n, 0 < 'n <= max_mem_access . (
   let last = first + to_bits(width - 1);
   let allowed = mpt_allows_page(mode, first, access)
     & (last[63 .. 12] == first[63 .. 12] | mpt_allows_page(mode, last, access));
-  if allowed then None() else Some(accessFaultFromAccessType(access))
+  if allowed then return None();
+  mpt_refused = true;
+  Some(accessFaultFromAccessType(access))
 }
 
 // The memory path's check (see mptCheck in sys/mem.sail).
 function mptCheck(paddr, width, access, priv) = mpt_access_check(paddr, width, access, priv)
+
+// Whether exception e is an MPT access fault that the configuration has taken
+// in M-mode, whatever medeleg and hedeleg say (smsd_mpt_fault_target).
+function mpt_fault_in_machine(e : ExceptionType) -> bool =
+  smsd_mpt_fault_target == Smsd_MPT_Fault_Machine & mpt_refused & (match e {
+    E_Fetch_Access_Fault() => true,
+    E_Load_Access_Fault()  => true,
+    E_SAMO_Access_Fault()  => true,
+    _                      => false,
+  })

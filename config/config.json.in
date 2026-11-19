@@ -1277,6 +1277,7 @@
       "napot_bit11_reserved": true,
       "napot_range_cache": false,
       "hlvx_permission": "Smsd_HLVX_ExecuteAndRead",
+      "mpt_fault_target": "Smsd_MPT_Fault_Delegable",
       "fence_exception_in_vs_vu": "Smsd_Fence_Illegal"
     },
     // The double trap extensions are not enabled by default because

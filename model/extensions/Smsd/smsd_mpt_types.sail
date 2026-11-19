@@ -39,6 +39,18 @@ enum SmsdHlvxPermission = {
 }
 let smsd_hlvx_permission : SmsdHlvxPermission = config extensions.Smsd.hlvx_permission
 
+// Where an MPT access fault is taken. Each step of the lookup that refuses an
+// access raises "an access-fault exception corresponding to the original
+// access type" (4:194-222), which medeleg and hedeleg may delegate as any
+// other, while the text's introduction says that "An MPT access violation is
+// always reported as a trap to the M-mode RDSM" (its lines 138-139).
+// Default: as any other access fault.
+enum SmsdMptFaultTarget = {
+  Smsd_MPT_Fault_Delegable, // medeleg and hedeleg apply
+  Smsd_MPT_Fault_Machine,   // always taken in M-mode
+}
+let smsd_mpt_fault_target : SmsdMptFaultTarget = config extensions.Smsd.mpt_fault_target
+
 // What applies when the MPTEs of a NAPOT range differ. "All leaf MPTEs at that
 // level of this NAPOT memory protection range have the same value for L, N,
 // XWR and V bits" (4:131-132) binds software, and the text expects that a

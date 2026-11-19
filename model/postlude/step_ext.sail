@@ -10,7 +10,9 @@
 
 function ext_fetch_hook(f : FetchResult) -> FetchResult = f
 
-function ext_pre_step_hook()  -> unit = ()
+// Supervisor Domains (Smsd) clears its record of MPT refusals before each
+// instruction (see smsd_pre_step).
+function ext_pre_step_hook()  -> unit = smsd_pre_step()
 function ext_post_step_hook() -> unit = ()
 
 function ext_reset() -> unit = ()

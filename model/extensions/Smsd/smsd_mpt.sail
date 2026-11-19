@@ -130,3 +130,6 @@ function mpt_fault_in_machine(e : ExceptionType) -> bool =
     E_SAMO_Access_Fault()  => true,
     _                      => false,
   })
+
+// Trap delegation's check (see mptFaultInMachine in sys/sys_control.sail).
+function mptFaultInMachine(e) = mpt_fault_in_machine(e)

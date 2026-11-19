@@ -60,9 +60,15 @@ function check_CSR_result(csr : csreg, p : Privilege, access_type : CSRAccessTyp
     CSR_Illegal()
 }
 
+// Whether an access fault raised by the memory protection table of
+// Supervisor Domains (Smsd) is taken in M-mode whatever medeleg and hedeleg
+// say. Defined in extensions/Smsd/smsd_mpt.sail.
+val mptFaultInMachine : ExceptionType -> bool
+
 // Exception delegation: given an exception and the privilege at which
 // it occurred, returns the privilege at which it should be handled.
 function exception_delegatee(e : ExceptionType, p : Privilege) -> Privilege = {
+  if mptFaultInMachine(e) then return Machine;
   let idx = unsigned(exceptionType_bits(e));
   // Note that `medeleg` can have bits set for custom exceptions (see
   // `core/interrupt_regs.sail:legalize_medeleg()`).

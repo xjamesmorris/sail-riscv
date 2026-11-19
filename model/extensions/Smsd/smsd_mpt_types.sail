@@ -30,11 +30,11 @@ let smsd_napot_bit11_reserved : bool = config extensions.Smsd.napot_bit11_reserv
 
 // What an HLVX needs in the MPT. "The MXR mechanisms or the use of HLVX
 // instruction cannot be used to affect or override the interpretation of
-// permissions encoded in memory-protection-table entries" (4:224-226).
-// Default: execute and read, the answer given to the text's issue 202.
+// permissions encoded in memory-protection-table entries" (4:224-226), so
+// an execute-only page refuses an HLVX either way. Default: execute and
+// read, the answer given to the text's issue 202. Smsd_HLVX_Read: read.
 enum SmsdHlvxPermission = {
   Smsd_HLVX_ExecuteAndRead,
-  Smsd_HLVX_Execute,
   Smsd_HLVX_Read,
 }
 let smsd_hlvx_permission : SmsdHlvxPermission = config extensions.Smsd.hlvx_permission
@@ -220,7 +220,7 @@ function mpt_step_of(mode : mpt_mode, i : range(0, 4), mpte : bits(64), pa : bit
 // checked as an implicit load or store (4:174-180). As for PMP, an AMO needs
 // read and write permission. A shadow-stack access needs read and write
 // (4:228-229). MXR has no effect (4:224-226), and HLVX needs what the
-// configuration says (see smsd_types.sail).
+// configuration says (see smsd_hlvx_permission).
 function mpt_allows(xwr : bits(3), access : MemoryAccessType(mem_payload)) -> bool = {
   let r = xwr[0] == 0b1;
   let w = xwr[1] == 0b1;
@@ -236,7 +236,6 @@ function mpt_allows(xwr : bits(3), access : MemoryAccessType(mem_payload)) -> bo
     Atomic(_, _, _, _, _)                     => r & w,
     LoadExecute(_)                            => match smsd_hlvx_permission {
       Smsd_HLVX_ExecuteAndRead => x & r,
-      Smsd_HLVX_Execute        => x,
       Smsd_HLVX_Read           => r,
     },
     InstructionFetch()                        => x,

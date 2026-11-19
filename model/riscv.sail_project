@@ -542,6 +542,10 @@ extensions {
       requires Zicbop_types, Smsd_types
       files extensions/Smsd/smsd_mpt_types.sail
     }
+    Smsd_mpt {
+      requires sys, pmp, Smsd_types, Smsd_regs, Smsd_mpt_types
+      files extensions/Smsd/smsd_mpt.sail
+    }
   }
 
   CFI {

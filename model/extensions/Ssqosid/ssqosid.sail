@@ -35,4 +35,8 @@ function clause is_CSR_accessible(0x181, p, _) = currentlyEnabled(Ext_Ssqosid) &
 
 function clause read_CSR(0x181) = srmcfg.bits
 
-function clause write_CSR(0x181, value) = { srmcfg = legalize_srmcfg(srmcfg, value); Ok(srmcfg.bits) }
+// Supervisor Domain QoS Identifiers (Smsdqosid) may constrain the RCID and
+// MCID that a write leaves. Defined in extensions/Smsdqosid/smsdqosid.sail.
+val constrainSrmcfg : (Srmcfg, Srmcfg) -> Srmcfg
+
+function clause write_CSR(0x181, value) = { srmcfg = constrainSrmcfg(srmcfg, legalize_srmcfg(srmcfg, value)); Ok(srmcfg.bits) }

@@ -132,6 +132,10 @@ function smsdqosid_constrain_srmcfg(o : Srmcfg, n : Srmcfg) -> Srmcfg = {
   ]
 }
 
+// The write of srmcfg's check (see constrainSrmcfg in
+// extensions/Ssqosid/ssqosid.sail).
+function constrainSrmcfg(o, n) = smsdqosid_constrain_srmcfg(o, n)
+
 // A write of msdcfg (see smsd_regs.sail). Under Smsdqosid_Held, an ID held in
 // srmcfg that falls outside its new range becomes zero, the one value in
 // every range.

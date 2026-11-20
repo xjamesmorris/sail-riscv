@@ -707,6 +707,12 @@ enum clause extension = Ext_Smqosid
 mapping clause extensionName = Ext_Smqosid <-> "smqosid"
 function clause hartSupports(Ext_Smqosid) = sys_enable_experimental_extensions() & config extensions.Smqosid.supported
 
+// Supervisor Domain QoS Identifiers (experimental): RISC-V Supervisor
+// Domains Access Protection v0.9. It needs Smsd and Ssqosid.
+enum clause extension = Ext_Smsdqosid
+mapping clause extensionName = Ext_Smsdqosid <-> "smsdqosid"
+function clause hartSupports(Ext_Smsdqosid) = hartSupports(Ext_Smsd) & hartSupports(Ext_Ssqosid) & config extensions.Smsdqosid.supported
+
 // Environment extensions
 // These extensions are not configurable via the config file
 // To avoid ordering issues, they are placed at the bottom
@@ -1027,6 +1033,7 @@ let extensions_ordered_for_isa_string = [
   Ext_Smnpm,
   Ext_Smqosid,
   Ext_Smsd,
+  Ext_Smsdqosid,
   Ext_Smstateen,
 
   // Debug extensions

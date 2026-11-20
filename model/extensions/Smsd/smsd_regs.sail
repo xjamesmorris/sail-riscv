@@ -89,14 +89,35 @@ function clause write_CSR(0x382, value) = {
   Ok(mmpt)
 }
 
-// msdcfg (3:249-284). Its fields belong to Smsdia and Smsdqosid, which the
-// model does not implement, and "if no optional extensions are implemented,
-// this CSR becomes read-only zero" (3:262-266). When MXLEN=64, bits 63:32,
-// which the text does not draw, read as zero too.
+// msdcfg (3:249-284). Its fields belong to other extensions: SIDN to Smsdia,
+// and SSRM, SSMM, SRL, and SML to Smsdqosid. "If an extension is not
+// implemented, the corresponding configuration bits in msdcfg are read-only
+// zero" (3:262-266), and the model does not implement Smsdia. Bits 21:6 are
+// 0 (NZR) and read as zero (3:283-284). When MXLEN=64, bits 63:32, which
+// the text does not draw, read as zero too.
+bitfield Msdcfg : xlenbits = {
+  SML  : 31 .. 28,
+  SRL  : 27 .. 24,
+  SSMM : 23,
+  SSRM : 22,
+  SIDN : 5 .. 0
+}
+
+// The text gives msdcfg no reset value; the model resets it to zero.
+register msdcfg : Msdcfg = Mk_Msdcfg(zeros())
+
+// What a write of value leaves in msdcfg: Smsdqosid's fields, while it is
+// enabled, and zero elsewhere. Defined in
+// extensions/Smsdqosid/smsdqosid.sail.
+val msdcfg_write : xlenbits -> Msdcfg
+
 mapping clause csr_name_map = 0x74E <-> "msdcfg"
 
 function clause is_CSR_accessible(0x74E, _, _) = currentlyEnabled(Ext_Smsd)
 
-function clause read_CSR(0x74E) = zeros()
+function clause read_CSR(0x74E) = msdcfg.bits
 
-function clause write_CSR(0x74E, _) = Ok(zeros())
+function clause write_CSR(0x74E, value) = {
+  msdcfg = msdcfg_write(value);
+  Ok(msdcfg.bits)
+}

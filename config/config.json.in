@@ -1289,6 +1289,16 @@
       "mcid_length": 12,
       "qrid_length": 4
     },
+    // Supervisor Domain QoS Identifiers (experimental): RISC-V Supervisor
+    // Domains Access Protection v0.9, chapter 9. It needs Smsd and
+    // Ssqosid. qrid_length is the number of implemented bits of
+    // mnrmcfg.QRID, 0 to 4.
+    "Smsdqosid": {
+      "supported": true,
+      "qrid_length": 4,
+      "range_scope": "Smsdqosid_SD_Writes",
+      "out_of_range_write": "Smsdqosid_Keep"
+    },
     // The double trap extensions are not enabled by default because
     // mstatus[MDT] is reset to 1. Unless the boot code clears it, the
     // first trap taken will result in an unexpected double trap.

@@ -553,6 +553,11 @@ extensions {
     }
   }
 
+  Smsdqosid {
+    requires core, Ssqosid, Smsd_regs
+    files extensions/Smsdqosid/smsdqosid.sail
+  }
+
   CFI {
     requires core
 
@@ -665,11 +670,12 @@ postlude {
 
 unit_tests {
   after postlude
-  requires prelude, core, sys, exceptions, postlude, A_types, Zicbop_types, Smsd_types, Smsd_regs, Smsd_mpt_types
+  requires prelude, core, sys, exceptions, postlude, A_types, Zicbop_types, Smsd_types, Smsd_regs, Smsd_mpt_types, Ssqosid, Smqosid, Smsdqosid
 
   files
     unit_tests/test_mstatus.sail,
     unit_tests/test_smsd.sail,
+    unit_tests/test_smsdqosid.sail,
 }
 
 main {

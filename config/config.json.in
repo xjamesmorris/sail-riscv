@@ -1280,6 +1280,15 @@
       "mpt_fault_target": "Smsd_MPT_Fault_Delegable",
       "fence_exception_in_vs_vu": "Smsd_Fence_Illegal"
     },
+    // Machine-Mode QoS Identifiers (experimental): RISC-V Supervisor
+    // Domains Access Protection v0.9, chapter 9. The number of implemented
+    // bits of each field of mrmcfg: RCID and MCID 0 to 12, QRID 0 to 4.
+    "Smqosid": {
+      "supported": true,
+      "rcid_length": 12,
+      "mcid_length": 12,
+      "qrid_length": 4
+    },
     // The double trap extensions are not enabled by default because
     // mstatus[MDT] is reset to 1. Unless the boot code clears it, the
     // first trap taken will result in an unexpected double trap.

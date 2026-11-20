@@ -524,6 +524,11 @@ extensions {
     files extensions/Ssqosid/ssqosid.sail
   }
 
+  Smqosid {
+    requires core
+    files extensions/Smqosid/smqosid.sail
+  }
+
   Smsd {
     requires core
 

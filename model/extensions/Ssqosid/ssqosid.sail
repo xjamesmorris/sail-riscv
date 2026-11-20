@@ -10,8 +10,8 @@ let rcidlen : range(1, 12) = config extensions.Ssqosid.rcid_length
 let mcidlen : range(1, 12) = config extensions.Ssqosid.mcid_length
 
 bitfield Srmcfg : xlenbits = {
-  RCID  : 27 .. 16,
-  MCID  : 11 .. 0
+  MCID  : 27 .. 16,
+  RCID  : 11 .. 0
 }
 
 function clause currentlyEnabled(Ext_Ssqosid) = hartSupports(Ext_Ssqosid) & currentlyEnabled(Ext_Zicsr)
